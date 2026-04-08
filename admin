@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Wanza Admin Panel</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+  :root {
+    --gold:#F5A623;--gold-light:#FFD580;--deep:#0A0E1A;
+    --surface:rgba(255,255,255,0.04);--surface2:rgba(255,255,255,0.07);
+    --border:rgba(255,255,255,0.09);--text:#F0F4FF;--muted:rgba(240,244,255,0.5);
+    --green:#22c55e;--red:#ef4444;
+  }
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'DM Sans',sans-serif;background:var(--deep);color:var(--text);min-height:100dvh;padding:0 0 60px}
+  body::before{content:'';position:fixed;inset:0;z-index:-1;
+    background:radial-gradient(ellipse 500px 300px at 80% 0%,rgba(245,166,35,0.08) 0%,transparent 60%)}
+
+  /* Nav */
+  nav{padding:16px 20px;background:rgba(10,14,26,0.8);backdrop-filter:blur(16px);
+    border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;
+    position:sticky;top:0;z-index:100}
+  .nav-brand{font-family:'Sora',sans-serif;font-size:17px;font-weight:800;
+    background:linear-gradient(135deg,var(--gold),var(--gold-light));
+    -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+  .nav-badge{font-size:10px;background:rgba(245,166,35,0.15);border:1px solid rgba(245,166,35,0.3);
+    color:var(--gold);padding:3px 10px;border-radius:100px;letter-spacing:0.08em}
+
+  /* Tabs */
+  .tabs{display:flex;gap:0;border-bottom:1px solid var(--border);overflow-x:auto;background:rgba(10,14,26,0.5)}
+  .tab{padding:14px 20px;font-size:13px;font-weight:500;color:var(--muted);cursor:pointer;
+    border-bottom:2px solid transparent;white-space:nowrap;transition:all 0.2s}
+  .tab.active{color:var(--gold);border-bottom-color:var(--gold)}
+
+  /* Content */
+  .pane{display:none;padding:20px;animation:fadeIn 0.3s ease}
+  .pane.active{display:block}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+  /* Stats row */
+  .stats{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:24px}
+  .stat-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:18px}
+  .stat-val{font-family:'Sora',sans-serif;font-size:26px;font-weight:800;color:var(--gold)}
+  .stat-label{font-size:12px;color:var(--muted);margin-top:4px}
+
+  /* Section */
+  .section-title{font-family:'Sora',sans-serif;font-size:14px;font-weight:700;color:rgba(255,255,255,0.7);
+    margin-bottom:14px;letter-spacing:0.02em}
+
+  /* Card */
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:20px;margin-bottom:14px}
+
+  /* Form */
+  .form-group{margin-bottom:14px}
+  label{font-size:12px;color:var(--muted);display:block;margin-bottom:6px;letter-spacing:0.03em}
+  input,select,textarea{width:100%;background:rgba(255,255,255,0.04);border:1px solid var(--border);
+    border-radius:10px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;
+    padding:12px 14px;outline:none;transition:border-color 0.2s}
+  input:focus,select:focus,textarea:focus{border-color:rgba(245,166,35,0.4)}
+  select option{background:#1a2035;color:var(--text)}
+  textarea{min-height:80px;resize:none}
+
+  /* Buttons */
+  .btn{padding:12px 22px;border-radius:12px;font-family:'Sora',sans-serif;font-size:13px;font-weight:600;
+    cursor:pointer;border:none;transition:all 0.2s;width:100%;margin-top:4px}
+  .btn-gold{background:linear-gradient(135deg,var(--gold),var(--gold-light));color:#0A0E1A}
+  .btn-gold:hover{box-shadow:0 4px 20px rgba(245,166,35,0.3);transform:translateY(-1px)}
+  .btn-outline{background:none;border:1px solid var(--border);color:var(--muted);margin-top:8px}
+  .btn-outline:hover{border-color:var(--gold);color:var(--gold)}
+
+  /* Table */
+  .table-wrap{overflow-x:auto;border-radius:12px;border:1px solid var(--border)}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  th{background:rgba(255,255,255,0.04);padding:12px 14px;text-align:left;
+    font-size:11px;font-weight:600;color:var(--muted);letter-spacing:0.06em;text-transform:uppercase;
+    border-bottom:1px solid var(--border)}
+  td{padding:12px 14px;border-bottom:1px solid rgba(255,255,255,0.04);vertical-align:middle}
+  tr:last-child td{border-bottom:none}
+  tr:hover td{background:rgba(255,255,255,0.02)}
+
+  /* QR */
+  #qrOutput{display:none;margin-top:20px;text-align:center}
+  #qrCanvas{background:#fff;padding:12px;border-radius:12px;display:inline-block}
+  .qr-url{font-size:11px;color:var(--muted);margin-top:10px;word-break:break-all;padding:0 10px}
+
+  /* Toast */
+  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(60px);
+    background:#1a2035;border:1px solid rgba(34,197,94,0.3);color:var(--green);
+    font-size:13px;font-weight:500;padding:11px 24px;border-radius:100px;
+    transition:all 0.3s cubic-bezier(0.16,1,0.3,1);opacity:0;z-index:999}
+  .toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+  .badge-green{background:rgba(34,197,94,0.1);color:var(--green);border-radius:100px;
+    padding:2px 10px;font-size:11px}
+  .badge-gold{background:rgba(245,166,35,0.1);color:var(--gold);border-radius:100px;
+    padding:2px 10px;font-size:11px}
+</style>
+</head>
+<body>
+
+<nav>
+  <span class="nav-brand">⚡ Wanza Admin</span>
+  <span class="nav-badge">ADMIN PANEL</span>
+</nav>
+
+<div class="tabs">
+  <div class="tab active" onclick="switchTab('dashboard')">📊 Dashboard</div>
+  <div class="tab" onclick="switchTab('clients')">🏢 Clients</div>
+  <div class="tab" onclick="switchTab('customers')">👤 Customers</div>
+  <div class="tab" onclick="switchTab('qr')">🔗 QR Generator</div>
+  <div class="tab" onclick="switchTab('analytics')">📈 Analytics</div>
+</div>
+
+<!-- DASHBOARD -->
+<div class="pane active" id="pane-dashboard">
+  <div class="stats">
+    <div class="stat-card"><div class="stat-val" id="s-clients">–</div><div class="stat-label">Total Clients</div></div>
+    <div class="stat-card"><div class="stat-val" id="s-customers">–</div><div class="stat-label">Customers</div></div>
+    <div class="stat-card"><div class="stat-val" id="s-copies">–</div><div class="stat-label">Reviews Copied</div></div>
+    <div class="stat-card"><div class="stat-val" id="s-clicks">–</div><div class="stat-label">Google Clicks</div></div>
+  </div>
+  <div class="section-title">Recent Activity</div>
+  <div class="table-wrap">
+    <table><thead><tr><th>Time</th><th>Customer</th><th>Client</th><th>Action</th></tr></thead>
+    <tbody id="activityTable"><tr><td colspan="4" style="text-align:center;color:var(--muted);padding:24px">Loading…</td></tr></tbody></table>
+  </div>
+</div>
+
+<!-- CLIENTS -->
+<div class="pane" id="pane-clients">
+  <div class="section-title">Add New Client</div>
+  <div class="card">
+    <div class="form-group"><label>Business Name *</label><input id="c-name" placeholder="e.g. Sharma Dental Clinic"/></div>
+    <div class="form-group"><label>City</label><input id="c-city" placeholder="e.g. Mumbai"/></div>
+    <div class="form-group"><label>Tagline</label><input id="c-tagline" placeholder="e.g. Your smile, our priority"/></div>
+    <div class="form-group"><label>Google Review Link *</label><input id="c-google" placeholder="https://g.page/r/…/review"/></div>
+    <div class="form-group"><label>Logo Initial (1 letter)</label><input id="c-logo" maxlength="2" placeholder="S"/></div>
+    <button class="btn btn-gold" onclick="addClient()">➕ Add Client</button>
+  </div>
+  <div class="section-title">Existing Clients</div>
+  <div class="table-wrap">
+    <table><thead><tr><th>ID</th><th>Name</th><th>City</th><th>Status</th></tr></thead>
+    <tbody id="clientTable"><tr><td colspan="4" style="text-align:center;color:var(--muted);padding:24px">Loading…</td></tr></tbody></table>
+  </div>
+</div>
+
+<!-- CUSTOMERS -->
+<div class="pane" id="pane-customers">
+  <div class="section-title">Add New Customer</div>
+  <div class="card">
+    <div class="form-group"><label>Customer Name *</label><input id="cu-name" placeholder="e.g. Rahul Verma"/></div>
+    <div class="form-group"><label>Phone</label><input id="cu-phone" placeholder="+91 XXXXXXXXXX"/></div>
+    <div class="form-group"><label>Assign to Client</label>
+      <select id="cu-client"><option value="">Select client…</option></select></div>
+    <button class="btn btn-gold" onclick="addCustomer()">➕ Add Customer</button>
+  </div>
+  <div class="section-title">All Customers</div>
+  <div class="table-wrap">
+    <table><thead><tr><th>ID</th><th>Name</th><th>Phone</th><th>Client</th></tr></thead>
+    <tbody id="customerTable"><tr><td colspan="4" style="text-align:center;color:var(--muted);padding:24px">Loading…</td></tr></tbody></table>
+  </div>
+</div>
+
+<!-- QR GENERATOR -->
+<div class="pane" id="pane-qr">
+  <div class="section-title">Generate QR Code</div>
+  <div class="card">
+    <div class="form-group"><label>Base URL (your deployed domain)</label>
+      <input id="qr-base" value="https://yourdomain.com" placeholder="https://yourdomain.com"/></div>
+    <div class="form-group"><label>Select Client</label>
+      <select id="qr-client"><option value="">Select client…</option></select></div>
+    <div class="form-group"><label>Select Customer</label>
+      <select id="qr-customer"><option value="">Select customer…</option></select></div>
+    <button class="btn btn-gold" onclick="genQR()">🔗 Generate QR Code</button>
+  </div>
+  <div id="qrOutput">
+    <div id="qrCanvas"></div>
+    <div class="qr-url" id="qrUrl"></div>
+    <button class="btn btn-outline" onclick="downloadQR()">⬇️ Download PNG</button>
+  </div>
+</div>
+
+<!-- ANALYTICS -->
+<div class="pane" id="pane-analytics">
+  <div class="section-title">Event Log</div>
+  <div class="table-wrap">
+    <table><thead><tr><th>Timestamp</th><th>CID</th><th>UID</th><th>Event</th></tr></thead>
+    <tbody id="analyticsTable"><tr><td colspan="4" style="text-align:center;color:var(--muted);padding:24px">Loading…</td></tr></tbody></table>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const SCRIPT_URL = 'https://script.googleusercontent.com/macros/echo?user_content_key=AWDtjMWbHur4Fg8TY5IAkQIFyeyjWyz-YHCw5QE-EhKUJCUsDXxrxudwMU6E1urKaqwOF3TQJtrMDe4TYjSfuVXppP0Uh0aXLSrKsGOQgQyiGuASMsMtWTZhQ4CgiVax0k3ecDn5rc22YIBKFB16rqq3o6paBowa9bUejzc5IsLEd9rGhevYRtNeBZZuwQv-GOoVSowi7T_nhcuQpv946sLJ1OR-v6AqEIadEairg4LYNzUdCoJedRQN7NielC3m_OlsiEWzcrqb2u4ibjE66hvcYwqyR3CBuw&lib=Mfc8JWPkTcRwCM1yl6-cG6S8naDcpXEEL';
+
+/* ── Tabs ── */
+function switchTab(id){
+  document.querySelectorAll('.tab').forEach((t,i)=>{
+    const ids=['dashboard','clients','customers','qr','analytics'];
+    t.classList.toggle('active', ids[i]===id);
+  });
+  document.querySelectorAll('.pane').forEach(p=>p.classList.remove('active'));
+  document.getElementById('pane-'+id).classList.add('active');
+  if(id==='dashboard') loadDashboard();
+  if(id==='clients')   loadClients();
+  if(id==='customers') loadCustomers();
+  if(id==='analytics') loadAnalytics();
+  if(id==='qr')        populateSelects();
+}
+
+function showToast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500)}
+
+async function api(params){
+  try{
+    const qs=new URLSearchParams(params).toString();
+    const r=await fetch(`${SCRIPT_URL}?${qs}`);
+    return await r.json();
+  }catch(e){return{status:'error',message:e.message}}
+}
+
+/* ── Dashboard ── */
+async function loadDashboard(){
+  const d=await api({action:'getStats'});
+  if(d.status==='ok'){
+    document.getElementById('s-clients').textContent   = d.clients   || 0;
+    document.getElementById('s-customers').textContent = d.customers || 0;
+    document.getElementById('s-copies').textContent    = d.copies    || 0;
+    document.getElementById('s-clicks').textContent    = d.clicks    || 0;
+  }
+  const ev=await api({action:'getEvents',limit:20});
+  const tb=document.getElementById('activityTable');
+  if(ev.status==='ok'&&ev.events?.length){
+    tb.innerHTML=ev.events.map(e=>`<tr>
+      <td style="font-size:11px;color:var(--muted)">${new Date(e.timestamp).toLocaleString()}</td>
+      <td>${e.uid||'–'}</td><td>${e.cid||'–'}</td>
+      <td><span class="${e.event==='google_click'?'badge-gold':'badge-green'}">${e.event}</span></td>
+    </tr>`).join('');
+  } else tb.innerHTML='<tr><td colspan="4" style="text-align:center;color:var(--muted);padding:24px">No activity yet</td></tr>';
+}
+
+/* ── Clients ── */
+async function loadClients(){
+  const d=await api({action:'getClients'});
+  const tb=document.getElementById('clientTable');
+  if(d.status==='ok'&&d.clients?.length){
+    tb.innerHTML=d.clients.map(c=>`<tr>
+      <td style="color:var(--muted);font-size:11px">${c.id}</td>
+      <td style="font-weight:500">${c.name}</td>
+      <td>${c.city||'–'}</td>
+      <td><span class="badge-green">Active</span></td>
+    </tr>`).join('');
+  } else tb.innerHTML='<tr><td colspan="4" style="text-align:center;color:var(--muted);padding:24px">No clients yet</td></tr>';
+}
+
+async function addClient(){
+  const name=document.getElementById('c-name').value.trim();
+  const city=document.getElementById('c-city').value.trim();
+  const tagline=document.getElementById('c-tagline').value.trim();
+  const google=document.getElementById('c-google').value.trim();
+  const logo=document.getElementById('c-logo').value.trim();
+  if(!name||!google){showToast('Name and Google link required');return}
+  const d=await api({action:'addClient',name,city,tagline,googleUrl:google,logo});
+  if(d.status==='ok'){showToast('✅ Client added! ID: '+d.id);loadClients()}
+  else showToast('Error: '+d.message);
+}
+
+/* ── Customers ── */
+async function loadCustomers(){
+  const d=await api({action:'getCustomers'});
+  const tb=document.getElementById('customerTable');
+  if(d.status==='ok'&&d.customers?.length){
+    tb.innerHTML=d.customers.map(c=>`<tr>
+      <td style="color:var(--muted);font-size:11px">${c.id}</td>
+      <td style="font-weight:500">${c.name}</td>
+      <td>${c.phone||'–'}</td>
+      <td>${c.clientId||'–'}</td>
+    </tr>`).join('');
+  } else tb.innerHTML='<tr><td colspan="4" style="text-align:center;color:var(--muted);padding:24px">No customers yet</td></tr>';
+  populateSelects();
+}
+
+async function addCustomer(){
+  const name=document.getElementById('cu-name').value.trim();
+  const phone=document.getElementById('cu-phone').value.trim();
+  const clientId=document.getElementById('cu-client').value;
+  if(!name){showToast('Name required');return}
+  const d=await api({action:'addCustomer',name,phone,clientId});
+  if(d.status==='ok'){showToast('✅ Customer added! ID: '+d.id);loadCustomers()}
+  else showToast('Error: '+d.message);
+}
+
+async function populateSelects(){
+  const dc=await api({action:'getClients'});
+  const du=await api({action:'getCustomers'});
+  ['cu-client','qr-client'].forEach(id=>{
+    const s=document.getElementById(id); if(!s)return;
+    const v=s.value;
+    s.innerHTML='<option value="">Select client…</option>';
+    if(dc.status==='ok') dc.clients?.forEach(c=>{const o=new Option(c.name,c.id);s.add(o)});
+    s.value=v;
+  });
+  const qs=document.getElementById('qr-customer'); if(!qs)return;
+  qs.innerHTML='<option value="">Select customer…</option>';
+  if(du.status==='ok') du.customers?.forEach(c=>{const o=new Option(c.name,c.id);qs.add(o)});
+}
+
+/* ── QR Generator ── */
+function genQR(){
+  const base=document.getElementById('qr-base').value.trim().replace(/\/$/,'');
+  const cid=document.getElementById('qr-client').value;
+  const uid=document.getElementById('qr-customer').value;
+  if(!cid||!uid){showToast('Select client and customer');return}
+  const url=`${base}?cid=${cid}&uid=${uid}`;
+  document.getElementById('qrUrl').textContent=url;
+  const canvas=document.getElementById('qrCanvas');
+  canvas.innerHTML='';
+  new QRCode(canvas,{text:url,width:200,height:200,colorDark:'#000000',colorLight:'#ffffff',correctLevel:QRCode.CorrectLevel.H});
+  document.getElementById('qrOutput').style.display='block';
+}
+function downloadQR(){
+  const img=document.querySelector('#qrCanvas img');
+  if(!img){showToast('Generate QR first');return}
+  const a=document.createElement('a');
+  a.download='wanza-qr.png'; a.href=img.src; a.click();
+}
+
+/* ── Analytics ── */
+async function loadAnalytics(){
+  const d=await api({action:'getEvents',limit:100});
+  const tb=document.getElementById('analyticsTable');
+  if(d.status==='ok'&&d.events?.length){
+    tb.innerHTML=d.events.map(e=>`<tr>
+      <td style="font-size:11px;color:var(--muted)">${new Date(e.timestamp).toLocaleString()}</td>
+      <td>${e.cid||'–'}</td><td>${e.uid||'–'}</td>
+      <td><span class="${e.event==='google_click'?'badge-gold':'badge-green'}">${e.event}</span></td>
+    </tr>`).join('');
+  } else tb.innerHTML='<tr><td colspan="4" style="text-align:center;color:var(--muted);padding:24px">No events yet</td></tr>';
+}
+
+/* ── Init ── */
+loadDashboard();
+</script>
+</body>
+</html>
