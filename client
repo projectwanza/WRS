@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Leave a Review</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,400&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --gold: #F5A623;
+    --gold-light: #FFD580;
+    --deep: #0A0E1A;
+    --surface: rgba(255,255,255,0.04);
+    --surface2: rgba(255,255,255,0.06);
+    --border: rgba(255,255,255,0.09);
+    --text: #F0F4FF;
+    --muted: rgba(240,244,255,0.5);
+    --green: #22c55e;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--deep);
+    color: var(--text);
+    min-height: 100dvh;
+    padding: 20px 16px 60px;
+    overflow-x: hidden;
+  }
+  body::before {
+    content: '';
+    position: fixed; inset: 0; z-index: -1;
+    background: radial-gradient(ellipse 600px 400px at 70% -10%, rgba(245,166,35,0.1) 0%, transparent 60%),
+                radial-gradient(ellipse 400px 400px at -10% 80%, rgba(99,102,241,0.08) 0%, transparent 60%);
+  }
+
+  /* ── Header ── */
+  .header {
+    display: flex; align-items: center; gap: 14px;
+    padding: 18px 20px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    margin-bottom: 20px;
+    animation: fadeUp 0.5s ease both;
+  }
+  .client-logo {
+    width: 52px; height: 52px; border-radius: 14px;
+    background: linear-gradient(135deg, #1c2236, #0d1120);
+    border: 1.5px solid rgba(245,166,35,0.3);
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Sora', sans-serif; font-size: 22px; font-weight: 800;
+    color: var(--gold); flex-shrink: 0;
+    box-shadow: 0 0 20px rgba(245,166,35,0.1);
+  }
+  .client-info { flex: 1; }
+  .client-name { font-family: 'Sora', sans-serif; font-size: 16px; font-weight: 700; color: #fff; }
+  .client-tagline { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .stars-row { display: flex; gap: 2px; font-size: 14px; }
+
+  /* ── Welcome banner ── */
+  .welcome {
+    background: linear-gradient(135deg, rgba(245,166,35,0.12) 0%, rgba(245,166,35,0.04) 100%);
+    border: 1px solid rgba(245,166,35,0.2);
+    border-radius: 16px;
+    padding: 16px 20px;
+    margin-bottom: 20px;
+    animation: fadeUp 0.5s 0.1s ease both;
+  }
+  .welcome p { font-size: 13px; color: rgba(255,214,128,0.9); line-height: 1.5; }
+  .welcome strong { font-family: 'Sora',sans-serif; font-size: 17px; font-weight: 700; color: var(--gold-light); display: block; margin-bottom: 4px; }
+
+  /* ── Section label ── */
+  .section-label {
+    font-family: 'Sora', sans-serif;
+    font-size: 11px; font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.3);
+    margin-bottom: 12px;
+    padding-left: 4px;
+    animation: fadeUp 0.5s 0.15s ease both;
+  }
+
+  /* ── Review cards ── */
+  .reviews-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 24px; }
+  .review-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 16px;
+    display: flex; gap: 12px; align-items: flex-start;
+    transition: border-color 0.2s, transform 0.2s;
+    animation: fadeUp 0.5s ease both;
+  }
+  .review-card:hover { border-color: rgba(245,166,35,0.3); transform: translateY(-1px); }
+  .review-body { flex: 1; }
+  .review-text { font-size: 13px; line-height: 1.65; color: rgba(240,244,255,0.85); font-style: italic; }
+  .review-stars { font-size: 11px; margin-bottom: 6px; }
+  .copy-btn {
+    background: none; border: 1px solid var(--border);
+    border-radius: 10px; padding: 8px 12px;
+    color: var(--muted); font-size: 12px; font-family: 'DM Sans', sans-serif;
+    cursor: pointer; white-space: nowrap; transition: all 0.2s;
+    flex-shrink: 0; margin-top: 2px;
+  }
+  .copy-btn:hover { border-color: var(--gold); color: var(--gold); }
+  .copy-btn.copied { border-color: var(--green); color: var(--green); background: rgba(34,197,94,0.08); }
+
+  /* ── Custom review ── */
+  .custom-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 20px;
+    margin-bottom: 20px;
+    animation: fadeUp 0.5s 0.25s ease both;
+  }
+  .custom-box label { font-size: 13px; color: var(--muted); display: block; margin-bottom: 10px; }
+  textarea {
+    width: 100%; min-height: 100px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif; font-size: 14px; line-height: 1.6;
+    padding: 14px;
+    resize: none; outline: none;
+    transition: border-color 0.2s;
+    margin-bottom: 10px;
+  }
+  textarea:focus { border-color: rgba(245,166,35,0.4); }
+  textarea::placeholder { color: rgba(255,255,255,0.2); }
+  .custom-actions { display: flex; gap: 8px; }
+  .btn-sm {
+    flex: 1; padding: 11px;
+    border-radius: 12px;
+    font-family: 'Sora', sans-serif; font-size: 13px; font-weight: 600;
+    cursor: pointer; transition: all 0.2s; border: none;
+  }
+  .btn-outline { background: none; border: 1px solid var(--border); color: var(--muted); }
+  .btn-outline:hover { border-color: var(--gold); color: var(--gold); }
+  .btn-gold { background: linear-gradient(135deg, var(--gold), var(--gold-light)); color: #0A0E1A; }
+  .btn-gold:hover { box-shadow: 0 4px 20px rgba(245,166,35,0.35); transform: translateY(-1px); }
+
+  /* ── AI toggle ── */
+  .ai-row {
+    display: flex; gap: 8px; flex-wrap: wrap;
+    margin-bottom: 24px;
+    animation: fadeUp 0.5s 0.3s ease both;
+  }
+  .tone-chip {
+    padding: 7px 14px; border-radius: 100px;
+    background: var(--surface2); border: 1px solid var(--border);
+    color: var(--muted); font-size: 12px; cursor: pointer; transition: all 0.2s;
+  }
+  .tone-chip.active, .tone-chip:hover { border-color: var(--gold); color: var(--gold); background: rgba(245,166,35,0.08); }
+
+  /* ── CTA button ── */
+  .cta-btn {
+    width: 100%; padding: 18px;
+    background: linear-gradient(135deg, var(--gold) 0%, var(--gold-light) 100%);
+    border: none; border-radius: 16px;
+    font-family: 'Sora', sans-serif; font-size: 16px; font-weight: 700;
+    color: #0A0E1A; cursor: pointer;
+    box-shadow: 0 8px 32px rgba(245,166,35,0.3);
+    transition: all 0.2s; margin-bottom: 16px;
+    animation: fadeUp 0.5s 0.35s ease both;
+  }
+  .cta-btn:hover { transform: translateY(-2px); box-shadow: 0 12px 40px rgba(245,166,35,0.45); }
+  .cta-btn:active { transform: translateY(0); }
+
+  /* ── Footer ── */
+  .footer {
+    text-align: center; margin-top: 12px;
+    font-size: 11px; color: rgba(255,255,255,0.2);
+    letter-spacing: 0.05em;
+    animation: fadeUp 0.5s 0.4s ease both;
+  }
+  .footer span { color: rgba(245,166,35,0.4); }
+
+  /* ── Loading skeleton ── */
+  .skeleton {
+    background: linear-gradient(90deg, rgba(255,255,255,0.04) 25%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.04) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+    border-radius: 8px;
+  }
+  @keyframes shimmer { to { background-position: -200% 0; } }
+
+  /* ── Toast ── */
+  .toast {
+    position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(80px);
+    background: #1a2035; border: 1px solid rgba(34,197,94,0.3);
+    color: var(--green); font-size: 13px; font-weight: 500;
+    padding: 12px 24px; border-radius: 100px;
+    transition: transform 0.3s cubic-bezier(0.16,1,0.3,1), opacity 0.3s;
+    opacity: 0; z-index: 999; white-space: nowrap;
+  }
+  .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .spinner {
+    width: 20px; height: 20px; border-radius: 50%;
+    border: 2px solid rgba(255,255,255,0.1);
+    border-top-color: var(--gold);
+    animation: spin 0.8s linear infinite;
+    margin: 30px auto;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="header" id="header">
+  <div class="client-logo" id="clientLogo">…</div>
+  <div class="client-info">
+    <div class="client-name" id="clientName">Loading…</div>
+    <div class="stars-row">⭐⭐⭐⭐⭐</div>
+    <div class="client-tagline" id="clientTagline"></div>
+  </div>
+</div>
+
+<!-- Welcome -->
+<div class="welcome" id="welcomeBox">
+  <strong id="welcomeName">Hello! 👋</strong>
+  <p id="welcomeMsg">We'd love to hear about your experience.</p>
+</div>
+
+<!-- AI Tone selector -->
+<div class="section-label">✨ Review Tone</div>
+<div class="ai-row" id="toneRow">
+  <div class="tone-chip active" data-tone="friendly">😊 Friendly</div>
+  <div class="tone-chip" data-tone="professional">💼 Professional</div>
+  <div class="tone-chip" data-tone="hinglish">🇮🇳 Hinglish</div>
+  <div class="tone-chip" id="genAI" style="border-color:rgba(245,166,35,0.3);color:var(--gold)">⚡ AI Generate</div>
+</div>
+
+<!-- Review suggestions -->
+<div class="section-label">📋 Suggested Reviews – Pick & Copy</div>
+<div class="reviews-list" id="reviewList"><div class="spinner"></div></div>
+
+<!-- Custom review -->
+<div class="section-label" style="animation-delay:0.2s">✏️ Write Your Own</div>
+<div class="custom-box">
+  <label>Type your review below, then copy & paste it on Google:</label>
+  <textarea id="customText" placeholder="Share your honest experience…"></textarea>
+  <div class="custom-actions">
+    <button class="btn-sm btn-outline" onclick="copyCustom()">📋 Copy</button>
+    <button class="btn-sm btn-gold" onclick="aiCustom()">⚡ AI Improve</button>
+  </div>
+</div>
+
+<!-- CTA -->
+<button class="cta-btn" id="ctaBtn" onclick="openGoogle()">⭐ Give Review on Google</button>
+
+<div class="footer">Review system by <span>Wanza Marketing</span></div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ============================================================
+   CONFIG – replace SCRIPT_URL with your deployed Apps Script
+   ============================================================ */
+const SCRIPT_URL = 'https://script.googleusercontent.com/macros/echo?user_content_key=AWDtjMWbHur4Fg8TY5IAkQIFyeyjWyz-YHCw5QE-EhKUJCUsDXxrxudwMU6E1urKaqwOF3TQJtrMDe4TYjSfuVXppP0Uh0aXLSrKsGOQgQyiGuASMsMtWTZhQ4CgiVax0k3ecDn5rc22YIBKFB16rqq3o6paBowa9bUejzc5IsLEd9rGhevYRtNeBZZuwQv-GOoVSowi7T_nhcuQpv946sLJ1OR-v6AqEIadEairg4LYNzUdCoJedRQN7NielC3m_OlsiEWzcrqb2u4ibjE66hvcYwqyR3CBuw&lib=Mfc8JWPkTcRwCM1yl6-cG6S8naDcpXEEL';
+
+/* ── URL params ── */
+const params   = new URLSearchParams(window.location.search);
+const CID      = params.get('cid') || 'demo';
+const UID      = params.get('uid') || 'demo';
+
+/* ── State ── */
+let googleReviewUrl = '';
+let clientData      = {};
+let customerData    = {};
+let currentTone     = 'friendly';
+
+/* ── Toast helper ── */
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+/* ── Track event ── */
+function track(action) {
+  const url = `${SCRIPT_URL}?action=track&cid=${CID}&uid=${UID}&event=${action}`;
+  fetch(url).catch(() => {});
+}
+
+/* ── Load data ── */
+async function loadData() {
+  try {
+    const url = `${SCRIPT_URL}?action=getData&cid=${CID}&uid=${UID}`;
+    const res  = await fetch(url);
+    const data = await res.json();
+    if (data.status === 'ok') {
+      clientData   = data.client   || {};
+      customerData = data.customer || {};
+      renderPage();
+    } else {
+      useDemoData();
+    }
+  } catch (e) {
+    useDemoData();
+  }
+}
+
+function useDemoData() {
+  clientData   = { name:'Demo Business', tagline:'5-star service', logo:'D', googleUrl:'https://maps.google.com', city:'Mumbai' };
+  customerData = { name:'Valued Customer' };
+  renderPage();
+}
+
+function renderPage() {
+  document.getElementById('clientLogo').textContent   = (clientData.logo || clientData.name?.[0] || 'B');
+  document.getElementById('clientName').textContent   = clientData.name || 'Business';
+  document.getElementById('clientTagline').textContent= clientData.tagline || '';
+  document.getElementById('welcomeName').textContent  = `Hello, ${customerData.name || 'Friend'}! 👋`;
+  document.getElementById('welcomeMsg').textContent   = `You visited ${clientData.name || 'our business'}. Your review helps others discover us.`;
+  googleReviewUrl = clientData.googleUrl || 'https://maps.google.com';
+  track('page_view');
+  renderReviews();
+}
+
+/* ── Generate reviews ── */
+function makeReviews(tone) {
+  const name    = customerData.name   || 'a customer';
+  const biz     = clientData.name     || 'this business';
+  const city    = clientData.city     || 'our city';
+  const sets = {
+    friendly: [
+      `Visited ${biz} recently and honestly had such a great experience! The team is super warm and everything went smoothly. If you're in ${city}, do visit! 😊`,
+      `Really happy with my experience at ${biz}. Everything was handled professionally and the staff made me feel so welcome. Five stars, no doubt! ⭐⭐⭐⭐⭐`,
+      `${biz} totally exceeded my expectations. From start to finish, everything was smooth and the service was top-notch. Highly recommend to everyone! 🙌`,
+      `Had a wonderful time at ${biz}. The quality of service and attention to detail stood out. Will definitely be back and recommending to friends! 💯`,
+      `If you want reliable and friendly service, go to ${biz}. They were so accommodating and made the whole experience stress-free. Absolutely loved it! ❤️`,
+    ],
+    professional: [
+      `I had an excellent experience with ${biz}. Their service is highly professional, efficient, and delivered beyond expectations. I would strongly recommend them to anyone seeking quality service in ${city}.`,
+      `${biz} demonstrates a remarkable level of professionalism. The staff is knowledgeable, courteous, and attentive to client needs. A truly dependable business deserving of five stars.`,
+      `From initial contact to final delivery, ${biz} maintained exceptional standards. Their commitment to quality is evident in every interaction. I have no hesitation in recommending their services.`,
+      `Outstanding service from ${biz}. The entire process was seamless and professionally managed. Their attention to detail and customer focus set them apart from the competition.`,
+      `${biz} provided a first-class experience that exceeded my expectations in every way. Their team is highly skilled and professional. I will continue to use their services and recommend them highly.`,
+    ],
+    hinglish: [
+      `Yaar, ${biz} ka experience toh zabardast tha! Service bilkul first-class thi aur staff bahut helpful tha. ${city} mein hain toh zaroor visit karo! 🤩`,
+      `${biz} ne ek dum mast experience diya! Sab kuch smooth gaya aur logo ne bahut achhe se help ki. 5 star toh banta hi hai! ⭐⭐⭐⭐⭐`,
+      `Bhaiyo aur behno, agar aap ${city} mein hain toh ${biz} zaroor try karo. Quality aur service dono toh gajakamini! Main toh baar baar aaunga 😄`,
+      `Kya service thi yaar! ${biz} ne sach mein dil khush kar diya. Har cheez itni smooth thi ki aur kya chahiye. Bilkul recommend karta/karti hoon! 💪`,
+      `${biz} ka experience ek dum Level 100 tha! Staff friendly, service fast – koi complaint hi nahi. ${city} ke best businesses mein se ek! 🔥`,
+    ],
+  };
+  return sets[tone] || sets.friendly;
+}
+
+function renderReviews(tone = currentTone) {
+  const list    = document.getElementById('reviewList');
+  const reviews = makeReviews(tone);
+  list.innerHTML = '';
+  reviews.forEach((text, i) => {
+    const card = document.createElement('div');
+    card.className = 'review-card';
+    card.style.animationDelay = (i * 0.07) + 's';
+    card.innerHTML = `
+      <div class="review-body">
+        <div class="review-stars">⭐⭐⭐⭐⭐</div>
+        <div class="review-text">"${text}"</div>
+      </div>
+      <button class="copy-btn" onclick="copyReview(this, \`${text.replace(/`/g,'\\`')}\`)">Copy</button>
+    `;
+    list.appendChild(card);
+  });
+}
+
+/* ── Tone chips ── */
+document.querySelectorAll('.tone-chip[data-tone]').forEach(chip => {
+  chip.addEventListener('click', () => {
+    document.querySelectorAll('.tone-chip[data-tone]').forEach(c => c.classList.remove('active'));
+    chip.classList.add('active');
+    currentTone = chip.dataset.tone;
+    renderReviews(currentTone);
+  });
+});
+document.getElementById('genAI').addEventListener('click', async () => {
+  document.getElementById('genAI').textContent = '⏳ Generating…';
+  await aiGenerateReviews();
+  document.getElementById('genAI').textContent = '⚡ AI Generate';
+});
+
+/* ── AI Generate via Anthropic ── */
+async function aiGenerateReviews() {
+  const biz  = clientData.name || 'this business';
+  const city = clientData.city || 'the city';
+  const tone = currentTone;
+  const prompt = `Generate 5 unique, genuine-sounding Google review texts for a business called "${biz}" in ${city}. Tone: ${tone}. Each review should be 2-3 sentences, include varied positive aspects (staff, speed, quality, value), sound human not robotic. Return ONLY a JSON array of 5 strings, nothing else.`;
+  try {
+    const res  = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+    const data    = await res.json();
+    const raw     = data.content?.[0]?.text || '[]';
+    const clean   = raw.replace(/```json|```/g,'').trim();
+    const reviews = JSON.parse(clean);
+    if (!Array.isArray(reviews)) throw new Error();
+    const list = document.getElementById('reviewList');
+    list.innerHTML = '';
+    reviews.forEach((text, i) => {
+      const card = document.createElement('div');
+      card.className = 'review-card';
+      card.style.animationDelay = (i * 0.07) + 's';
+      card.innerHTML = `
+        <div class="review-body">
+          <div class="review-stars">⭐⭐⭐⭐⭐</div>
+          <div class="review-text">"${text}"</div>
+        </div>
+        <button class="copy-btn" onclick="copyReview(this, \`${text.replace(/`/g,'\\`')}\`)">Copy</button>
+      `;
+      list.appendChild(card);
+    });
+    showToast('✨ AI reviews generated!');
+  } catch (e) {
+    renderReviews(currentTone);
+    showToast('Using preset reviews.');
+  }
+}
+
+/* ── AI improve custom ── */
+async function aiCustom() {
+  const ta   = document.getElementById('customText');
+  const text = ta.value.trim();
+  if (!text) { showToast('Please type a review first'); return; }
+  ta.placeholder = '⏳ Improving…'; ta.disabled = true;
+  try {
+    const res  = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514', max_tokens: 500,
+        messages: [{ role:'user', content: `Improve this Google review to sound more genuine, warm and persuasive. Keep it under 80 words. Return ONLY the improved review text:\n\n"${text}"` }]
+      })
+    });
+    const data = await res.json();
+    ta.value   = data.content?.[0]?.text?.replace(/^"|"$/g,'').trim() || text;
+    showToast('✨ Review improved!');
+  } catch (e) { showToast('Could not connect to AI'); }
+  finally { ta.disabled = false; ta.placeholder = 'Share your honest experience…'; }
+}
+
+/* ── Copy functions ── */
+function copyReview(btn, text) {
+  navigator.clipboard.writeText(text).then(() => {
+    btn.textContent = '✅ Copied';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 2500);
+    track('copy_review');
+    showToast('Copied! Now tap "Give Review on Google" ⭐');
+  });
+}
+function copyCustom() {
+  const text = document.getElementById('customText').value.trim();
+  if (!text) { showToast('Write your review first'); return; }
+  navigator.clipboard.writeText(text).then(() => {
+    showToast('✅ Copied! Now open Google Reviews');
+    track('copy_custom');
+  });
+}
+
+/* ── Open Google ── */
+function openGoogle() {
+  track('google_click');
+  window.open(googleReviewUrl || 'https://maps.google.com', '_blank');
+}
+
+/* ── Init ── */
+loadData();
+</script>
+</body>
+</html>
